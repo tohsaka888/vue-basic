@@ -38,3 +38,52 @@ trigger()
 通常情况下,我们定义的对象中有多个属性,并且每一个属性都需要它们自己的 `dep`(effect的集合),我们需要在值改变时去执行 `trigger`
 
 ## 实现对象响应式
+
+首先我们需要一个地方来存储对象的所有属性,这里我们选用 `map`我们将对象的属性当作键,对象属性对应的effect集合(dep)当作值存储在 `map`中就可以实现了
+
+```js
+
+const depsMap = new Map()
+
+function track(key, effect) {
+  let dep = depsMap.get(key)
+  if (!dep) {
+    depsMap.set(key, dep = new Set())
+  }
+
+  dep.add(effect)
+}
+
+function trigger(key) {
+  let dep = depsMap.get(key)
+  Array.from(dep).forEach(effect => effect())
+}
+
+let product = {
+  price: 5,
+  quantity: 2
+}
+
+let total = 0
+
+let effect = () => {
+  total = product.price * product.quantity
+  console.log(total)
+}
+
+track('price', effect)
+track('quantity', effect)
+
+trigger('price')
+```
+
+## 实现多个对象响应式
+
+想要实现多个对象响应式,我们就需要一个存储多个对象的结构,这里选择的weakMap,我们将整个对象当作键,将其对应的 `depsMap`当作值存储,就可以实现了
+
+> 为什么选用weakMap
+>
+> 1. weakMap必须对象当作键
+> 2. 当weakMap中的值没有被引用,它可以被javaScript当作垃圾回收
+>
+> [详情可见]()
