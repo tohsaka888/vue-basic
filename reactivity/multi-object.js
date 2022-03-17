@@ -29,6 +29,8 @@ function trigger(target, key) {
   Array.from(dep).forEach(effect => effect())
 }
 
+export {track, trigger}
+
 let product = {
   price: 2,
   quantity: 5
